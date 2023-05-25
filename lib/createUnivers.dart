@@ -43,7 +43,7 @@ class _CreateUniversePageState extends State<CreateUniversePage> {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (BuildContext context) => UniverseDetailsPage(universeId, widget.token),
+                      builder: (BuildContext context) => UniverseDetailsPage(response, widget.token),
                     ),
                   );
                 },

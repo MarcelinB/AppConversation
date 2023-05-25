@@ -31,6 +31,7 @@ class _WelcomePageState extends State<WelcomePage> {
       );
 
       if (response.statusCode == 200) {
+        print(widget.token);
         final data = json.decode(response.body);
         final filteredItems = data.where((item) => item['creator_id'] == widget.idUser).toList();
         setState(() {

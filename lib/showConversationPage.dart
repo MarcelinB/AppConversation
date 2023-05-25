@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 
 class ShowConversationPage extends StatelessWidget {
   final dynamic character;
+  final String token;
 
-  ShowConversationPage(this.character);
+  ShowConversationPage(this.character, this.token);
 
   @override
   Widget build(BuildContext context) {

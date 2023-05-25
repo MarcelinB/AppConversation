@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'showConversationPage.dart';
 import 'dart:convert';
 
 class CreateCharacterPage extends StatefulWidget {
@@ -16,19 +17,25 @@ class _CreateCharacterPageState extends State<CreateCharacterPage> {
   TextEditingController _nameController = TextEditingController();
   TextEditingController _ageController = TextEditingController();
 
-  Future<void> createCharacter() async {
+  void createCharacter() async {
     try {
       final response = await http.post(
         Uri.https('caen0001.mds-caen.yt', '/universes/${widget.universeId}/characters'),
         headers: {'Authorization': '${widget.token}', 'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'name': _nameController.text
-        }),
+        body: jsonEncode({'name': _nameController.text}),
       );
 
       if (response.statusCode == 201) {
+        final data = json.decode(response.body);
+        print(response.body);
         // Personnage créé avec succès
-        Navigator.pop(context, true); // Retourne à la page précédente en indiquant que le personnage a été créé
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            
+            builder: (BuildContext context) => ShowConversationPage(data, widget.token),
+          ),
+        );
       } else {
         print('Erreur lors de la requête : ${response.statusCode}');
         // Gérer les erreurs de création du personnage
@@ -55,7 +62,6 @@ class _CreateCharacterPageState extends State<CreateCharacterPage> {
                 labelText: 'Nom',
               ),
             ),
-          
             SizedBox(height: 16),
             ElevatedButton(
               onPressed: createCharacter,

@@ -2,19 +2,20 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'universeDetailsPage.dart';
 
 class CreateUniversePage extends StatefulWidget {
-  @override
   final String token;
   final int idUser;
+
   CreateUniversePage(this.token, this.idUser);
 
+  @override
   _CreateUniversePageState createState() => _CreateUniversePageState();
 }
 
 class _CreateUniversePageState extends State<CreateUniversePage> {
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _creatorIdController = TextEditingController();
 
   Future<void> createUniverse() async {
     final String name = _nameController.text;
@@ -31,6 +32,9 @@ class _CreateUniversePageState extends State<CreateUniversePage> {
 
       if (response.statusCode == 201) {
         // Gestion du succès
+        final data = json.decode(response.body);
+        final universeId = data['id'];
+        
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
@@ -39,7 +43,16 @@ class _CreateUniversePageState extends State<CreateUniversePage> {
             actions: [
               TextButton(
                 child: const Text('OK'),
-                onPressed: () => Navigator.pop(context),
+                onPressed: () {
+                  Navigator.pop(context); // Ferme le dialogue
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (BuildContext context) =>
+                          UniverseDetailsPage(data, widget.token),
+                    ),
+                  );
+                },
               ),
             ],
           ),
@@ -63,15 +76,14 @@ class _CreateUniversePageState extends State<CreateUniversePage> {
         );
       }
     } catch (e) {
-              print('Erreur lors de la requête : ${e}');
-        print(widget.token);
+      print('Erreur lors de la requête : ${e}');
+      print(widget.token);
       // Gestion des erreurs de connexion
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('Erreur de connexion'),
-          content:
-              const Text('Une erreur s\'est produite lors de la connexion.'),
+          content: const Text('Une erreur s\'est produite lors de la connexion.'),
           actions: [
             TextButton(
               child: const Text('OK'),
@@ -87,7 +99,7 @@ class _CreateUniversePageState extends State<CreateUniversePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Création d\'univers'),
+        title: const Text('Création d\'univers'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -95,13 +107,13 @@ class _CreateUniversePageState extends State<CreateUniversePage> {
           children: [
             TextField(
               controller: _nameController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Nom de l\'univers',
               ),
             ),
             ElevatedButton(
               onPressed: createUniverse,
-              child: Text('Créer l\'univers'),
+              child: const Text('Créer l\'univers'),
             ),
           ],
         ),

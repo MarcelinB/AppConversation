@@ -56,7 +56,7 @@ class _UniverseDetailsPageState extends State<UniverseDetailsPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (BuildContext context) => ShowConversationPage(character),
+        builder: (BuildContext context) => ShowConversationPage(character, widget.token),
       ),
     );
   }

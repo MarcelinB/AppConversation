@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'services/apiservice.dart';
 
 class ConversationPage extends StatefulWidget {
   final dynamic conversation;
@@ -16,31 +17,24 @@ class ConversationPage extends StatefulWidget {
 class _ConversationPageState extends State<ConversationPage> {
   List<dynamic> messages = [];
   TextEditingController _messageController = TextEditingController();
+  late ApiService apiService;
 
   @override
   void initState() {
     super.initState();
+    apiService = ApiService('caen0001.mds-caen.yt', widget.token);
     fetchMessages();
   }
 
   Future<void> fetchMessages() async {
-    try {
-      final response = await http.get(
-        Uri.https('caen0001.mds-caen.yt', '/conversations/${widget.conversation['id']}/messages'),
-        headers: {'Authorization': '${widget.token}'},
-      );
+    final response = await apiService.get('/conversations/${widget.conversation['id']}/messages');
 
-      if (response.statusCode == 200) {
-        setState(() {
-          messages = jsonDecode(response.body);
-        });
-      } else {
-        print('Erreur lors de la requête : ${response.statusCode}');
-        // Gérer les erreurs de récupération des messages
-      }
-    } catch (e) {
-      print('Erreur de connexion : $e');
-      // Gérer les erreurs de connexion
+    if (response != null && response is List<dynamic>) {
+      setState(() {
+        messages = response;
+      });
+    } else {
+      // Gérer les erreurs de récupération des messages
     }
   }
 
@@ -48,27 +42,16 @@ class _ConversationPageState extends State<ConversationPage> {
     final messageContent = _messageController.text;
     final senderName = widget.name;
 
-    try {
-      final response = await http.post(
-        Uri.https('caen0001.mds-caen.yt', '/conversations/${widget.conversation['id']}/messages'),
-        headers: {'Authorization': '${widget.token}', 'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'content': messageContent,
-          'sender_name': senderName,
-        }),
-      );
+    final response = await apiService.post('/conversations/${widget.conversation['id']}/messages', {
+      'content': messageContent,
+      'sender_name': senderName,
+    });
 
-      if (response.statusCode == 201) {
-        // Message envoyé avec succès
-        _messageController.clear();
-        fetchMessages(); // Rafraîchir la liste des messages
-      } else {
-        print('Erreur lors de la requête : ${response.statusCode}');
-        // Gérer les erreurs d'envoi du message
-      }
-    } catch (e) {
-      print('Erreur de connexion : $e');
-      // Gérer les erreurs de connexion
+    if (response != null) {
+      _messageController.clear();
+      fetchMessages();
+    } else {
+      // Gérer les erreurs d'envoi du message
     }
   }
 

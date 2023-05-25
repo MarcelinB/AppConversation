@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'services/apiservice.dart';
 import 'createCharacterePage.dart';
 import 'showConversationPage.dart';
 
@@ -16,27 +15,25 @@ class UniverseDetailsPage extends StatefulWidget {
 
 class _UniverseDetailsPageState extends State<UniverseDetailsPage> {
   List<dynamic> characters = [];
+  late ApiService _apiService;
 
   @override
   void initState() {
     super.initState();
+    _apiService = ApiService('caen0001.mds-caen.yt', widget.token);
     fetchCharacters();
   }
 
   Future<void> fetchCharacters() async {
     try {
-      final response = await http.get(
-        Uri.https('caen0001.mds-caen.yt', '/universes/${widget.universe['id']}/characters'),
-        headers: {'Authorization': '${widget.token}'},
-      );
+      final response = await _apiService.get('/universes/${widget.universe['id']}/characters');
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+      if (response != null) {
         setState(() {
-          characters = data;
+          characters = response;
         });
       } else {
-        print('Erreur lors de la requête : ${response.statusCode}');
+        print('Erreur lors de la requête');
       }
     } catch (e) {
       print('Erreur de connexion : $e');

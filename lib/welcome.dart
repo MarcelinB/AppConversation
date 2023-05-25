@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'createUnivers.dart';
 import 'UniverseDetailsPage.dart';
+import 'services/apiservice.dart';
 
 class WelcomePage extends StatefulWidget {
   final String token;
@@ -16,29 +17,28 @@ class WelcomePage extends StatefulWidget {
 
 class _WelcomePageState extends State<WelcomePage> {
   List<dynamic> items = [];
+  late ApiService _apiService;
 
   @override
   void initState() {
     super.initState();
+    _apiService = ApiService('caen0001.mds-caen.yt', widget.token);
     fetchData();
   }
 
   Future<void> fetchData() async {
     try {
-      final response = await http.get(
-        Uri.https('caen0001.mds-caen.yt', '/universes'),
-        headers: {'Authorization': '${widget.token}'},
-      );
+      final response = await _apiService.get('/universes');
 
-      if (response.statusCode == 200) {
-        print(widget.token);
-        final data = json.decode(response.body);
-        final filteredItems = data.where((item) => item['creator_id'] == widget.idUser).toList();
+      if (response != null) {
+        final data = response;
+        final filteredItems =
+            data.where((item) => item['creator_id'] == widget.idUser).toList();
         setState(() {
           items = filteredItems;
         });
       } else {
-        print('Erreur lors de la requête : ${response.statusCode}');
+        print('Erreur lors de la requête');
       }
     } catch (e) {
       print('Erreur de connexion : $e');
@@ -63,7 +63,7 @@ class _WelcomePageState extends State<WelcomePage> {
       body: Column(
         children: [
           Text(
-            'Mon id utilisateur : ' + widget.idUser.toString(),
+            'Mon id utilisateur : ${widget.idUser.toString()}',
           ),
           Text(
             'Mes univers',

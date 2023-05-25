@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'services/apiservice.dart';
 import 'showConversationPage.dart';
-import 'dart:convert';
 
 class CreateCharacterPage extends StatefulWidget {
   final int universeId;
@@ -15,34 +14,33 @@ class CreateCharacterPage extends StatefulWidget {
 
 class _CreateCharacterPageState extends State<CreateCharacterPage> {
   TextEditingController _nameController = TextEditingController();
-  TextEditingController _ageController = TextEditingController();
+  late ApiService _apiService;
 
-  void createCharacter() async {
-    try {
-      final response = await http.post(
-        Uri.https('caen0001.mds-caen.yt', '/universes/${widget.universeId}/characters'),
-        headers: {'Authorization': '${widget.token}', 'Content-Type': 'application/json'},
-        body: jsonEncode({'name': _nameController.text}),
+  @override
+  void initState() {
+    super.initState();
+    _apiService = ApiService('caen0001.mds-caen.yt', widget.token);
+  }
+
+  Future<void> createCharacter() async {
+    final characterName = _nameController.text;
+
+    final data = {
+      'name': characterName,
+    };
+
+    final response = await _apiService.post('/universes/${widget.universeId}/characters', data);
+
+    if (response != null) {
+      print(response);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (BuildContext context) => ShowConversationPage(response, widget.token),
+        ),
       );
-
-      if (response.statusCode == 201) {
-        final data = json.decode(response.body);
-        print(response.body);
-        // Personnage créé avec succès
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            
-            builder: (BuildContext context) => ShowConversationPage(data, widget.token),
-          ),
-        );
-      } else {
-        print('Erreur lors de la requête : ${response.statusCode}');
-        // Gérer les erreurs de création du personnage
-      }
-    } catch (e) {
-      print('Erreur de connexion : $e');
-      // Gérer les erreurs de connexion
+    } else {
+      print('Erreur lors de la création du personnage');
     }
   }
 

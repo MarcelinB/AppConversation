@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import './welcome.dart';
-import 'package:http/http.dart' as http;
+import 'services/apiservice.dart';
+import 'welcome.dart';
 import 'createAccountPage.dart';
 
 class LoginPage extends StatefulWidget {
@@ -14,66 +13,73 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
 
   String? _token;
+  late ApiService _apiService;
+
+  @override
+  void initState() {
+    super.initState();
+    _apiService = ApiService('caen0001.mds-caen.yt', '');
+  }
 
   Future<void> _login() async {
     final String username = _usernameController.text;
     final String password = _passwordController.text;
 
-    final String body = json.encode({
+    final body = {
       'username': username,
       'password': password,
-    });
+    };
 
-    final response = await http.post(
-      Uri.https('caen0001.mds-caen.yt', '/auth'),
-      body: body,
-    );
+    try {
+      final response = await _apiService.post('/auth', body);
 
-    if (response.statusCode == 201) {
-      final data = json.decode(response.body);
-      final token = data['token'];
-      final idUser = data['id'];
+      if (response != null) {
+        final token = response['token'];
+        final idUser = response['id'];
 
-      setState(() {
-        _token = token;
-      });
+        setState(() {
+          _token = token;
+        });
 
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Félicitations !'),
-          content: const Text('Identifiants corrects. Vous êtes connecté'),
-          actions: [
-            TextButton(
-              child: const Text('OK'),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute<void>(
-                    builder: (BuildContext context) {
-                      return WelcomePage(_token!, idUser!);
-                    },
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-      );
-    } else {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Erreur de connexion'),
-          content: const Text('Identifiants invalides. Veuillez réessayer.'),
-          actions: [
-            TextButton(
-              child: const Text('OK'),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ],
-        ),
-      );
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Félicitations !'),
+            content: const Text('Identifiants corrects. Vous êtes connecté'),
+            actions: [
+              TextButton(
+                child: const Text('OK'),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute<void>(
+                      builder: (BuildContext context) {
+                        return WelcomePage(_token!, idUser!);
+                      },
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      } else {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Erreur de connexion'),
+            content: const Text('Identifiants invalides. Veuillez réessayer.'),
+            actions: [
+              TextButton(
+                child: const Text('OK'),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      print('Erreur de connexion : $e');
     }
   }
 
@@ -123,4 +129,3 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
-

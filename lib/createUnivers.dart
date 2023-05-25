@@ -1,7 +1,6 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'services/apiservice.dart';
 import 'universeDetailsPage.dart';
 
 class CreateUniversePage extends StatefulWidget {
@@ -16,24 +15,20 @@ class CreateUniversePage extends StatefulWidget {
 
 class _CreateUniversePageState extends State<CreateUniversePage> {
   final TextEditingController _nameController = TextEditingController();
+  late ApiService _apiService = ApiService('caen0001.mds-caen.yt', widget.token);
 
   Future<void> createUniverse() async {
     final String name = _nameController.text;
 
     try {
-      final response = await http.post(
-        Uri.https('caen0001.mds-caen.yt', '/universes'),
-        headers: {'Authorization': '${widget.token}'},
-        body: jsonEncode({
-          'name': name,
-          'creator_id': widget.idUser.toString(),
-        }),
-      );
+      final response = await _apiService.post('/universes', {
+        'name': name,
+        'creator_id': widget.idUser.toString(),
+      });
 
-      if (response.statusCode == 201) {
-        // Gestion du succès
-        final data = json.decode(response.body);
-        final universeId = data['id'];
+      if (response != null) {
+        final universeId = response['id'];
+        print(response['id']);
         
         showDialog(
           context: context,
@@ -44,12 +39,11 @@ class _CreateUniversePageState extends State<CreateUniversePage> {
               TextButton(
                 child: const Text('OK'),
                 onPressed: () {
-                  Navigator.pop(context); // Ferme le dialogue
-                  Navigator.push(
+                  Navigator.pop(context);
+                  Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (BuildContext context) =>
-                          UniverseDetailsPage(data, widget.token),
+                      builder: (BuildContext context) => UniverseDetailsPage(universeId, widget.token),
                     ),
                   );
                 },
@@ -58,14 +52,11 @@ class _CreateUniversePageState extends State<CreateUniversePage> {
           ),
         );
       } else {
-        print('Erreur lors de la requête : ${response.statusCode}');
-        // Gestion des erreurs
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
             title: const Text('Erreur'),
-            content: const Text(
-                'Une erreur s\'est produite lors de la création de l\'univers.'),
+            content: const Text('Une erreur s\'est produite lors de la création de l\'univers.'),
             actions: [
               TextButton(
                 child: const Text('OK'),
@@ -76,9 +67,6 @@ class _CreateUniversePageState extends State<CreateUniversePage> {
         );
       }
     } catch (e) {
-      print('Erreur lors de la requête : ${e}');
-      print(widget.token);
-      // Gestion des erreurs de connexion
       showDialog(
         context: context,
         builder: (context) => AlertDialog(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'conversationPage.dart';
 import 'dart:convert';
 
 class ShowConversationPage extends StatefulWidget {
@@ -31,7 +32,6 @@ class _ShowConversationPageState extends State<ShowConversationPage> {
       if (response.statusCode == 200) {
         setState(() {
           conversations = jsonDecode(response.body);
-          print(conversations);
         });
       } else {
         print('Erreur lors de la requête : ${response.statusCode}');
@@ -43,9 +43,17 @@ class _ShowConversationPageState extends State<ShowConversationPage> {
     }
   }
 
+  void navigateToConversation(dynamic conversation) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (BuildContext context) => ConversationPage(conversation, widget.token, widget.character['name']),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    //print(widget.character);
     final characterName = widget.character['name'] ?? 'Personnage inconnu';
 
     return Scaffold(
@@ -61,6 +69,7 @@ class _ShowConversationPageState extends State<ShowConversationPage> {
           if (conversation['character_id'] == widget.character['id']) {
             return ListTile(
               title: Text('Conversation ${conversation['id']}'),
+              onTap: () => navigateToConversation(conversation),
             );
           }
 
@@ -70,3 +79,5 @@ class _ShowConversationPageState extends State<ShowConversationPage> {
     );
   }
 }
+
+

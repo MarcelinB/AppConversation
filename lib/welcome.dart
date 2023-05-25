@@ -53,6 +53,22 @@ class _WelcomePageState extends State<WelcomePage> {
       ),
     );
   }
+  
+  Future<void> deleteUniverse(dynamic universe) async {
+    try {
+      final response = await _apiService.delete('/universes/${universe['id']}');
+
+      if (response != null) {
+        print('Univers supprimé avec succès');
+        // Rafraîchir la liste des univers après la suppression
+        fetchData();
+      } else {
+        print('Erreur lors de la suppression de l\'univers');
+      }
+    } catch (e) {
+      print('Erreur de connexion : $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,6 +94,10 @@ class _WelcomePageState extends State<WelcomePage> {
                 return ListTile(
                   title: Text(item['name']),
                   subtitle: Text('Creator ID: ${item['creator_id']}'),
+                  trailing: IconButton(
+                    icon: Icon(Icons.delete),
+                    onPressed: () => deleteUniverse(item),
+                  ),
                   onTap: () => navigateToUniverseDetails(item),
                 );
               },

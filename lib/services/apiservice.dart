@@ -45,4 +45,23 @@ class ApiService {
       return null;
     }
   }
+
+    Future<dynamic> delete(String path) async {
+    try {
+      final response = await http.delete(
+        Uri.https(baseUrl, path),
+        headers: {'Authorization': token},
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        print('Erreur lors de la requête : ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      print('Erreur de connexion : $e');
+      return null;
+    }
+  }
 }
